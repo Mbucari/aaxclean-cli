@@ -4,12 +4,12 @@ namespace aaxclean_cli
 {
 	public class ActivationByteString : FixedLengthByteString
 	{
-		public static ActivationByteString Parse(string hexString, System.Globalization.CultureInfo cultureInfo)
+		public static ActivationByteString Parse(string hexString)
 		{
-			if (!TryParse(hexString, 4, out byte[] bytes))
+			if (!TryParse(hexString, 4, out ActivationByteString byteString))
 				throw new InvalidConversionException("Activation Bytes must be 8 hex chars (4 bytes) long", "activation_bytes");
 
-			return new ActivationByteString { Bytes = bytes };
+			return byteString;
 		}
 	}
 }

@@ -1,8 +1,7 @@
 {
   "profiles": {
     "AaxCli": {
-      "commandName": "Project",
-      "commandLineArgs": "-f \"..\\..\\..\\..\\..\\TestFiles\\HP_Zero.aax\" --audible_key 00000000000000000000000000000000 --audible_iv 00000000000000000000000000000000 -o \"D:\\OneDrive\\Projects\\AaxClean\\AaxTest\\TestFiles\\HP_Zero.m4b\" --chapter \"Chapter 1|0|1345.245\" --chapter \"Chapter 2|1345.245|2411.579\" --chapter \"Chapter 3|3756.824|1813.139\""
+      "commandName": "Project"
     }
   }
 }

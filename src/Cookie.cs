@@ -16,13 +16,13 @@ namespace aaxclean_cli
 			var split = stringValue.Split('|', System.StringSplitOptions.RemoveEmptyEntries);
 
 			if (split.Length != 2)
-				throw new CommandLineArgumentException("Bad Cookie format", "cookie");
+				throw new CommandLineArgumentException("Cookie format is \"name|value\"", "cookie");
 
 			split[0] = split[0].Trim();
 			split[1] = split[1].Trim();
 
 			if (string.IsNullOrEmpty(split[0]) || string.IsNullOrEmpty(split[1]))
-				throw new CommandLineArgumentException("Bad Cookie format", "cookie");
+				throw new CommandLineArgumentException("Cookie format is \"name|value\"", "cookie");
 			return new Cookie { Name = split[0], Value = split[1] };
 		}
 	}
