@@ -31,19 +31,21 @@ namespace aaxclean_cli
             }
 			catch(Exception ex)
 			{
-                Console.Error.WriteLine($"Unknown Error: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
                 return -2;
 			}
 
 			try
             {
+                var chapters = p.GetUserChapters();
+
                 WriteProgressUpdate($"Opening aax file...");
 
                 var aaxFile = p.GetInputFile();
 				aaxFile.ConversionProgressUpdate += AaxFile_ConversionProgressUpdate;
 
                 DateTime startTime = DateTime.Now;
-                var result = aaxFile.ConvertToMp4a(p.GetOutputStream());
+                var result = aaxFile.ConvertToMp4a(p.GetOutputStream(), chapters);
                 var duration = DateTime.Now - startTime;
 
                 if (result == ConversionResult.Failed)

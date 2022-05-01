@@ -1,9 +1,4 @@
 ﻿using CommandLineParser.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace aaxclean_cli
 {
@@ -18,7 +13,7 @@ namespace aaxclean_cli
 
 		public static Cookie Parse(string stringValue, System.Globalization.CultureInfo cultureInfo)
 		{
-			var split = stringValue.Split('=');
+			var split = stringValue.Split('|', System.StringSplitOptions.RemoveEmptyEntries);
 
 			if (split.Length != 2)
 				throw new CommandLineArgumentException("Bad Cookie format", "cookie");

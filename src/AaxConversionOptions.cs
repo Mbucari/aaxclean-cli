@@ -18,7 +18,7 @@ namespace aaxclean_cli
 	[ArgumentGroupCertification("activation_bytes,audible_key", EArgumentGroupCondition.AtLeastOneUsed)]
 	public class AaxConversionOptions
 	{
-		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file")]
+		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file", FileMustExist = true)]
 		public FileInfo InputFromFile;
 
 		[ValueArgument(typeof(string), 'u', "url", AllowMultiple = false, Description = "Aax(c) input from http(s) url")]
@@ -27,24 +27,27 @@ namespace aaxclean_cli
 		[ValueArgument(typeof(string), "user_agent", AllowMultiple = false, Description = "Http(s) user agent", FullDescription = "Default is \"Audible/671 CFNetwork/1240.0.4 Darwin/20.6.0\"", DefaultValue = "Audible/671 CFNetwork/1240.0.4 Darwin/20.6.0")]
 		public string UrlUserAgent;
 
-		[ValueArgument(typeof(Cookie), "cookie", AllowMultiple = true, Description = "Http(s) cookie", Example ="name=value")]
-		public List<Cookie> Cookie;
+		[ValueArgument(typeof(Cookie), "cookie", AllowMultiple = true, Description = "Http(s) cookie", Example = "--cookie \"name1|value1\" --cookie \"name2|value2\"")]
+		public List<Cookie> Cookies;
 
-		[ValueArgument(typeof(ActivationByteString), "activation_bytes", AllowMultiple = false, Description = "Aax file activation bytes")]
+		[ValueArgument(typeof(ActivationByteString), "activation_bytes", AllowMultiple = false, Description = "Aax file activation bytes", Example = "a0b1c2d3")]
 		public ActivationByteString AudibleActivationBytes;
 
-		[ValueArgument(typeof(AaxcKeyByteString), "audible_key", AllowMultiple = false, Description = "Aaxc file key")]
+		[ValueArgument(typeof(AaxcKeyByteString), "audible_key", AllowMultiple = false, Description = "Aaxc file key", Example = "a0b1c2d3e4f5a0b1c2d3e4f5a0b1c2d3")]
 		public AaxcKeyByteString AudibleKey;
 
-		[ValueArgument(typeof(AaxcIVByteString), "audible_iv", AllowMultiple = false, Description = "Aaxc file iv")]
+		[ValueArgument(typeof(AaxcIVByteString), "audible_iv", AllowMultiple = false, Description = "Aaxc file iv", Example = "c2d3e4f5a0b1c2d3a0b1c2d3e4f5a0b1")]
 		public AaxcIVByteString AudibleIV;
 
-		[ValueArgument(typeof(string), 'o', "outfile", AllowMultiple = false, Description = "Uutput file to write the decrypted m4b", Optional = false)]
-		public string OutputToFile;
+		[ValueArgument(typeof(Chapter), "chapter", AllowMultiple = true, Description = "user-defined chapter marker: Title|start_secs|duration_secs", Example = "--chapter \"Chapter 1|0|1345.245\" --chapter \"Chapter 2|1345.245|2411.579\"")]
+		public List<Chapter> Chapters;
+
+		[FileArgument('o', "outfile", AllowMultiple = false, Description = "Output file to write the decrypted m4b", Optional = false, FileMustExist = false)]
+		public FileInfo OutputToFile;
 
 		public AaxFile GetInputFile()
 		{
-			var aaxFile = InputFromFile is not null ? new AaxFile(InputFromFile.FullName) : GetAaxFromUrl();
+			var aaxFile = InputFromFile is not null ? new AaxFile(InputFromFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read)) : GetAaxFromUrl();
 
 			if (AudibleActivationBytes is not null)
 				aaxFile.SetDecryptionKey(AudibleActivationBytes.Bytes);
@@ -54,9 +57,25 @@ namespace aaxclean_cli
 			return aaxFile;
 		}
 
+		public ChapterInfo GetUserChapters()
+		{
+			if (Chapters.Count == 0) return null;
+
+			Chapters.Sort((c1, c2) => c1.Start.CompareTo(c2.Start));
+
+			var chInfo = new ChapterInfo();
+
+			foreach (var c in Chapters)
+				chInfo.AddChapter(c.Title, c.Duration);
+
+			return chInfo;
+		}
+
 		public Stream GetOutputStream()
 		{
-			return File.Open(OutputToFile, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+			if (!OutputToFile.Directory.Exists)
+				OutputToFile.Directory.Create();
+			return OutputToFile.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
 		}
 
 		private AaxFile GetAaxFromUrl()
@@ -71,7 +90,7 @@ namespace aaxclean_cli
 
 			httpRequest.CookieContainer = new CookieContainer();
 
-			foreach (var c in Cookie)
+			foreach (var c in Cookies)
 			{
 				httpRequest.CookieContainer.Add(uri, new System.Net.Cookie(c.Name, c.Value));
 			}
