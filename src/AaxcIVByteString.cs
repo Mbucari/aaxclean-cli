@@ -9,7 +9,7 @@ namespace aaxclean_cli
 			if (!TryParse(hexString, 16, out byte[] bytes))
 				throw new InvalidConversionException("IV must be 32 hex chars (16 bytes) long", "audible_iv");
 
-			return new AaxcIVByteString { ByteString = hexString, Bytes = bytes };
+			return new AaxcIVByteString { Bytes = bytes };
 		}
 	}
 }

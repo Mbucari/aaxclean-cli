@@ -8,7 +8,6 @@ namespace aaxclean_cli
 {
 	public abstract class FixedLengthByteString
 	{
-		public string ByteString { get; protected set; }
 		public byte[] Bytes { get; protected set; }
 
 		public static bool TryParse(string hexString, int expectedLength, out byte[] bytes )
