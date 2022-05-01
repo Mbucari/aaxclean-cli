@@ -11,7 +11,7 @@ namespace aaxclean_cli
 			return $"{Name}={Value}";
 		}
 
-		public static Cookie Parse(string stringValue, System.Globalization.CultureInfo cultureInfo)
+		public static Cookie Parse(string stringValue)
 		{
 			var split = stringValue.Split('|', System.StringSplitOptions.RemoveEmptyEntries);
 
