@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AaxCli": {
+      "commandName": "Project",
+      "commandLineArgs": "-u \"https://dze5l2jxnquy5.cloudfront.net/d0a01787baf9ff9cb4d4493375dfdf9b/bk_adbl_002169_lc_64_22050_2.aax?id=2c0f3658-ced0-44f0-a106-eae08e2737ad&Expires=1651436524&Signature=Af2B89sLpcB~w4p~vJGt7-8s3euEBGMo9Tv5dEzGBE43~CtWyLbJPg02vP8hHlBjs9ZSFf~97kZVNOdjvldOVXH65fZ7p9bJI1Qe09JzYTj~lSsSji~RXrW10ZXymnuT3ZHcKBGzZHZQJnS-Gts61sAMg1C8dAhiJrFfSrLOvveaDps63FuOeykIhrVbI3F1FAHUsm5E4nASZVkjyUcRSytIPzv0AqyUKMQD1hynAk9nwHreJu9xR53BpVEa3NpfDQ8Gofrc2Oy~iMd56pV-hZU9AmOImfJljeLfAEQKRSfcc0Ltq4vUJhuS1UI8OY9GZAdznJPs4yMl2gH5Q~LU-Q__&Key-Pair-Id=K13BOWPVA44D7\" --audible_key \"1a2dccb4149cad7ae9648a5444e96829\" --audible_iv \"69dc03b306b813358b00e0df7f4d667d\" -o \"D:\\OneDrive\\Projects\\AaxClean\\AaxTest\\TestFiles\\SH_Zero.m4b\""
+    }
+  }
+}
