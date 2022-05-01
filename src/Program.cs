@@ -11,9 +11,9 @@ namespace aaxclean_cli
         {
             CommandLineParser.CommandLineParser parser = new();
 
-            AaxConversionOptions p = new();            
+            AaxConversionOptions aaxConversionOptions = new();            
 
-            parser.ExtractArgumentAttributes(p);
+            parser.ExtractArgumentAttributes(aaxConversionOptions);
 
             if (args is null || args.Length == 0 )
 			{
@@ -37,15 +37,15 @@ namespace aaxclean_cli
 
 			try
             {
-                var chapters = p.GetUserChapters();
+                var chapters = aaxConversionOptions.GetUserChapters();
 
                 WriteProgressUpdate($"Opening aax file...");
 
-                var aaxFile = p.GetInputFile();
+                var aaxFile = aaxConversionOptions.GetInputFile();
 				aaxFile.ConversionProgressUpdate += AaxFile_ConversionProgressUpdate;
 
                 DateTime startTime = DateTime.Now;
-                var result = aaxFile.ConvertToMp4a(p.GetOutputStream(), chapters);
+                var result = aaxFile.ConvertToMp4a(aaxConversionOptions.GetOutputStream(), chapters);
                 var duration = DateTime.Now - startTime;
 
                 if (result == ConversionResult.Failed)

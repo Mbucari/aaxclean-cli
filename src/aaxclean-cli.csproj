@@ -4,6 +4,16 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>aaxclean_cli</RootNamespace>
+    <Version>0.1.0</Version>
+    <Authors>MrGneissGuy</Authors>
+    <Company>Just Me, Inc.</Company>
+    <Description>Command line interface for AAXClean</Description>
+    <PackageProjectUrl>https://github.com/Mbucari/aaxclean-cli</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Mbucari/aaxclean-cli</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>Audible AAC AAXC m4b audiobook</PackageTags>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <NeutralLanguage>English</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
