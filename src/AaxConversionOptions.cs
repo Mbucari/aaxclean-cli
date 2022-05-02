@@ -12,10 +12,8 @@ namespace aaxclean_cli
 
 	[DistinctGroupsCertification("url,user_agent,cookie", "file")]
 	[ArgumentGroupCertification("file,url", EArgumentGroupCondition.ExactlyOneUsed)]
-	[DistinctGroupsCertification("activation_bytes", "audible_key,audible_iv")]
-	[ArgumentGroupCertification("activation_bytes", EArgumentGroupCondition.AllOrNoneUsed)]
+	[DistinctGroupsCertification("audible_key,audible_iv", "activation_bytes")]
 	[ArgumentGroupCertification("audible_key,audible_iv", EArgumentGroupCondition.AllOrNoneUsed)]
-	[ArgumentGroupCertification("activation_bytes,audible_key", EArgumentGroupCondition.OneOreNoneUsed)]
 	public class AaxConversionOptions
 	{
 		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file", FileMustExist = true)]
