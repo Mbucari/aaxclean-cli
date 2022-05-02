@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>aaxclean_cli</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>MrGneissGuy</Authors>
     <Company>Just Me, Inc.</Company>
     <Description>Command line interface for AAXClean</Description>
@@ -12,7 +12,7 @@
     <RepositoryUrl>https://github.com/Mbucari/aaxclean-cli</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Audible AAC AAXC m4b audiobook</PackageTags>
-    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <PackageReleaseNotes>Added list-chapters and console colors</PackageReleaseNotes>
     <NeutralLanguage>English</NeutralLanguage>
   </PropertyGroup>
 
@@ -27,7 +27,7 @@
 
   <ItemGroup>
 	  <ProjectReference Include="..\..\AAXClean\src\AAXClean.csproj" Condition="'$(Configuration)'=='Debug'" />
-	  <PackageReference Include="AAXClean" Version="0.3.4" Condition="'$(Configuration)'=='Release'" />
+	  <PackageReference Include="AAXClean" Version="0.3.5" Condition="'$(Configuration)'=='Release'" />
   </ItemGroup>
 
 </Project>
