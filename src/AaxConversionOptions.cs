@@ -15,7 +15,7 @@ namespace aaxclean_cli
 	[DistinctGroupsCertification("activation_bytes", "audible_key,audible_iv")]
 	[ArgumentGroupCertification("activation_bytes", EArgumentGroupCondition.AllOrNoneUsed)]
 	[ArgumentGroupCertification("audible_key,audible_iv", EArgumentGroupCondition.AllOrNoneUsed)]
-	[ArgumentGroupCertification("activation_bytes,audible_key", EArgumentGroupCondition.AtLeastOneUsed)]
+	[ArgumentGroupCertification("activation_bytes,audible_key", EArgumentGroupCondition.OneOreNoneUsed)]
 	public class AaxConversionOptions
 	{
 		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file", FileMustExist = true)]
@@ -42,8 +42,11 @@ namespace aaxclean_cli
 		[ValueArgument(typeof(Chapter), "chapter", AllowMultiple = true, Description = "user-defined chapter marker: Title|start_secs|duration_secs", Example = "--chapter \"Chapter 1|0|1345.245\" --chapter \"Chapter 2|1345.245|2411.579\"")]
 		public List<Chapter> Chapters;
 
-		[FileArgument('o', "outfile", AllowMultiple = false, Description = "Output file to write the decrypted m4b", Optional = false, FileMustExist = false)]
+		[FileArgument('o', "outfile", AllowMultiple = false, Description = "Output file to write the decrypted m4b", Optional = true, FileMustExist = false)]
 		public FileInfo OutputToFile;
+
+		[SwitchArgument("list-chapters", false, Description = "List the chapters from metadata", Optional = true)]
+		public bool ListChapters;
 
 		public AaxFile GetInputFile()
 		{
@@ -51,7 +54,7 @@ namespace aaxclean_cli
 
 			if (AudibleActivationBytes is not null)
 				aaxFile.SetDecryptionKey(AudibleActivationBytes.Bytes);
-			else
+			else if (AudibleKey is not null && AudibleIV is not null)
 				aaxFile.SetDecryptionKey(AudibleKey.Bytes, AudibleIV.Bytes);
 
 			return aaxFile;
