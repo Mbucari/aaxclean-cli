@@ -13,7 +13,7 @@ Command line interface for [AAXClean](https://github.com/Mbucari/AAXClean)
 - Output
   - Single m4b file
     - To local file system 
-    - To standard output (no file fixups for custom chapters, just decrypt)
+    - To standard output (no file fixups or custom chapters, just decrypt)
 
 ## Binary Releases:
 
