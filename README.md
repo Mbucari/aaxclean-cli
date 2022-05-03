@@ -13,3 +13,14 @@ Command line interface for [AAXClean](https://github.com/Mbucari/AAXClean)
 - Output
   - Single m4b file
     - To local file system 
+    - To standard output (no file fixups for custom chapters, just decrypt)
+
+## Binary Releases:
+
+Binaries are published for:
+ - Windows x64
+ - Windows x86
+ - Linux x64
+ - OSX x64
+
+All binaries are single file executables and are Framework-*Dependent*
