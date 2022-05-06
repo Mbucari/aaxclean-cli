@@ -14,7 +14,6 @@ namespace aaxclean_cli
 	[ArgumentGroupCertification("file,url", EArgumentGroupCondition.ExactlyOneUsed)]
 	[DistinctGroupsCertification("audible_key,audible_iv", "activation_bytes")]
 	[ArgumentGroupCertification("audible_key,audible_iv", EArgumentGroupCondition.AllOrNoneUsed)]
-	[DistinctGroupsCertification("chapter,outfile", "stdout")]
 	public class AaxConversionOptions
 	{
 		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file", FileMustExist = true)]
@@ -43,9 +42,6 @@ namespace aaxclean_cli
 
 		[FileArgument('o', "outfile", AllowMultiple = false, Description = "Output file to write the decrypted m4b", Optional = true, FileMustExist = false)]
 		public FileInfo OutputToFile;
-
-		[SwitchArgument("stdout", false, Description = "Write output to stdout. No file fixups or custom chapters allowed with this option.", Optional = true)]
-		public bool StandardOut;
 
 		[SwitchArgument("list-chapters", false, Description = "List the chapters from metadata", Optional = true)]
 		public bool ListChapters;
@@ -78,9 +74,6 @@ namespace aaxclean_cli
 
 		public Stream GetOutputStream()
 		{
-			if (StandardOut)
-				return Console.OpenStandardOutput(4 * 1024 * 1024);
-
 			if (!OutputToFile.Directory.Exists)
 				OutputToFile.Directory.Create();
 			return OutputToFile.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
@@ -89,7 +82,7 @@ namespace aaxclean_cli
 		{
 			var inFile = InputFromFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
 
-			return new AaxFile(inFile, inFile.Length, !StandardOut);
+			return new AaxFile(inFile, inFile.Length);
 		}
 
 		private AaxFile GetAaxFromUrl()
@@ -112,7 +105,7 @@ namespace aaxclean_cli
 
 			var stream = response.GetResponseStream();
 
-			return new AaxFile(stream, response.ContentLength, !StandardOut);
+			return new AaxFile(stream, response.ContentLength);
 		}
 	}
 }

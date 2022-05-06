@@ -2,13 +2,14 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace aaxclean_cli
 {
 	class Program
 	{
 		private static readonly TextWriter ConsoleText = Console.Error;
-		public static int Main(string[] args)
+		public static async Task<int> Main(string[] args)
 		{
 			CommandLineParser.CommandLineParser parser = new();
 
@@ -19,7 +20,7 @@ namespace aaxclean_cli
 			if (args is null || args.Length == 0)
 			{
 				parser.PrintUsage(ConsoleText);
-				return -1;
+				return await Task.FromResult(-1);
 			}
 			try
 			{
@@ -29,7 +30,7 @@ namespace aaxclean_cli
 			{
 				WriteColoredLine((ex.Message, ConsoleColor.Red));
 
-				return -1;
+				return await Task.FromResult(-1);
 			}
 			catch (Exception ex)
 			{
@@ -38,7 +39,7 @@ namespace aaxclean_cli
 					   (": ", ConsoleColor.White),
 					   (ex.Message, ConsoleColor.DarkRed));
 
-				return -2;
+				return await Task.FromResult(-2);
 			}
 
 			try
@@ -54,7 +55,7 @@ namespace aaxclean_cli
 					ListChapters(aaxFile);
 				}
 
-				if (aaxConversionOptions.OutputToFile is null && !aaxConversionOptions.StandardOut) return 0;
+				if (aaxConversionOptions.OutputToFile is null) return 0;
 
 				if (aaxFile.Key is null || aaxFile.IV is null)
 				{
@@ -68,7 +69,7 @@ namespace aaxclean_cli
 
 				DateTime startTime = DateTime.Now;
 
-				var result = aaxConversionOptions.StandardOut? aaxFile.ConvertPassThrough(aaxConversionOptions.GetOutputStream()) : aaxFile.ConvertToMp4a(aaxConversionOptions.GetOutputStream(), chapters);
+				var result = await aaxFile.ConvertToMp4aAsync(aaxConversionOptions.GetOutputStream(), chapters);
 
 
 				var duration = DateTime.Now - startTime;
@@ -78,7 +79,7 @@ namespace aaxclean_cli
 				if (result == ConversionResult.Failed)
 				{
 					WriteColoredLine(("Conversion Failed!", ConsoleColor.Red));
-					return -3;
+					return await Task.FromResult(-2);
 				}
 				else
 				{
@@ -86,7 +87,7 @@ namespace aaxclean_cli
 						("\r\nConversion succeeded!", ConsoleColor.Green),
 						($"  Total time: {duration:mm\\:ss\\.ff}", ConsoleColor.White));
 
-					return 0;
+					return await Task.FromResult(0);
 				}
 			}
 			catch (Exception ex)
@@ -96,7 +97,7 @@ namespace aaxclean_cli
 					(": ", ConsoleColor.White),
 					(ex.Message, ConsoleColor.DarkRed));
 
-				return -3;
+				return await Task.FromResult(-2); ;
 			}
 		}
 

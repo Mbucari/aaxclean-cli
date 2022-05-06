@@ -1,7 +1,8 @@
 {
   "profiles": {
     "AaxCli": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "-f ..\\..\\..\\..\\..\\testfiles\\sh_zero.aax --audible_key 00000000000000000000000000000000 --audible_iv 00000000000000000000000000000000 -o ..\\..\\..\\..\\..\\testfiles\\hp_zero.m4b"
     }
   }
 }
