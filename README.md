@@ -11,9 +11,7 @@ Command line interface for [AAXClean](https://github.com/Mbucari/AAXClean)
     - Custom user-agent string
     - User-defined web cookies
 - Output
-  - Single m4b file
-    - To local file system 
-    - To standard output (no file fixups or custom chapters, just decrypt)
+  - Single m4b file to local file system 
 
 ## Binary Releases:
 
@@ -21,6 +19,4 @@ Binaries are published for:
  - Windows x64
  - Windows x86
  - Linux x64
- - OSX x64
 
-All binaries are single file executables and are Framework-*Dependent*
