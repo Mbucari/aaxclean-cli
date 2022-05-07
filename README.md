@@ -5,6 +5,8 @@ Command line interface for [AAXClean](https://github.com/Mbucari/AAXClean)
 - Aax and Aaxc files
 - List chapters in Aax(c) file from metadata
 - User-defined chapters
+  - Entered manually as arguments
+  - From a chapter_info json file
 - Input Aax(c) files
   - From local file system
   - From an http(s) url
