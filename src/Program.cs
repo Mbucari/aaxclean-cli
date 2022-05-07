@@ -45,6 +45,8 @@ namespace aaxclean_cli
 			try
 			{
 				var chapters = aaxConversionOptions.GetUserChapters();
+				if (chapters is not null)
+					ListChapters("JSON FILE CHAPTERS", chapters);
 
 				ReWriteColored(($"Opening Aax file...", ConsoleColor.White));
 				var aaxFile = aaxConversionOptions.GetInputFile();
@@ -52,7 +54,7 @@ namespace aaxclean_cli
 
 				if (aaxConversionOptions.ListChapters)
 				{
-					ListChapters(aaxFile);
+					ListChapters("CHAPTER LIST", aaxFile.GetChaptersFromMetadata());
 				}
 
 				if (aaxConversionOptions.OutputToFile is null) return 0;
@@ -101,9 +103,8 @@ namespace aaxclean_cli
 			}
 		}
 
-		private static void ListChapters(AaxFile aaxFile)
+		private static void ListChapters(string prefix, AAXClean.ChapterInfo chInfo)
 		{
-			var chInfo = aaxFile.GetChaptersFromMetadata();
 			if (chInfo is null)
 			{
 				WriteColoredLine(("Error reading chapters from metadata", ConsoleColor.Red));
@@ -111,7 +112,7 @@ namespace aaxclean_cli
 
 			int maxLen = chInfo.Max(c => c.Title.Length) + 3;
 
-			WriteColoredLine(("\r\nCHAPTER LIST", ConsoleColor.Magenta));
+			WriteColoredLine(($"\r\n{prefix}", ConsoleColor.Magenta));
 
 			WritePad('-', maxLen + 67);
 			ConsoleText.WriteLine();

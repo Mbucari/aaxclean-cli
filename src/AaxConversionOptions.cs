@@ -1,6 +1,7 @@
 ﻿using AAXClean;
 using CommandLineParser.Arguments;
 using CommandLineParser.Validation;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,7 @@ namespace aaxclean_cli
 	[ArgumentGroupCertification("file,url", EArgumentGroupCondition.ExactlyOneUsed)]
 	[DistinctGroupsCertification("audible_key,audible_iv", "activation_bytes")]
 	[ArgumentGroupCertification("audible_key,audible_iv", EArgumentGroupCondition.AllOrNoneUsed)]
+	[ArgumentGroupCertification("chapter,chapter_info,list-chapters", EArgumentGroupCondition.ExactlyOneUsed)]
 	public class AaxConversionOptions
 	{
 		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file", FileMustExist = true)]
@@ -37,8 +39,11 @@ namespace aaxclean_cli
 		[ValueArgument(typeof(AaxcIVByteString), "audible_iv", AllowMultiple = false, Description = "Aaxc file iv", Example = "c2d3e4f5a0b1c2d3a0b1c2d3e4f5a0b1")]
 		public AaxcIVByteString AudibleIV;
 
-		[ValueArgument(typeof(Chapter), "chapter", AllowMultiple = true, Description = "user-defined chapter marker: Title|start_secs|duration_secs", Example = "--chapter \"Chapter 1|0|1345.245\" --chapter \"Chapter 2|1345.245|2411.579\"")]
+		[ValueArgument(typeof(Chapter), "chapter", AllowMultiple = true, Description = "user-defined chapter marker: Title|start_ms|duration_ms", Example = "--chapter \"Chapter 1|0|1345245\" --chapter \"Chapter 2|1345245|2411579\"")]
 		public List<Chapter> Chapters;
+
+		[FileArgument("chapter_info", AllowMultiple = false, Description = "file path to an Audible Api chapter_info json structure", Optional = true, FileMustExist = true)]
+		public FileInfo ChapterInfoFile;
 
 		[FileArgument('o', "outfile", AllowMultiple = false, Description = "Output file to write the decrypted m4b", Optional = true, FileMustExist = false)]
 		public FileInfo OutputToFile;
@@ -58,16 +63,41 @@ namespace aaxclean_cli
 			return aaxFile;
 		}
 
-		public ChapterInfo GetUserChapters()
+		public AAXClean.ChapterInfo GetUserChapters()
 		{
-			if (Chapters.Count == 0) return null;
+			if (Chapters.Count != 0) return GetIndividualChapters();
+			else if (ChapterInfoFile is not null) return GetJsonChapters();
+			return null;
+		}
 
-			Chapters.Sort((c1, c2) => c1.Start.CompareTo(c2.Start));
+		private AAXClean.ChapterInfo GetJsonChapters()
+		{
+			try
+			{
+				string json = File.ReadAllText(ChapterInfoFile.FullName);
+				var audible_chInfo = JsonConvert.DeserializeObject<ChapterInfo>(json);
 
-			var chInfo = new ChapterInfo();
+				Array.Sort(audible_chInfo.Chapters, (c1, c2) => c1.StartOffsetMs.CompareTo(c2.StartOffsetMs));
+
+				var chInfo = new AAXClean.ChapterInfo();
+
+				foreach (var c in audible_chInfo.Chapters)
+					chInfo.AddChapter(c.Title, TimeSpan.FromMilliseconds(c.LengthMs));
+
+				return chInfo;
+			}
+			catch (Exception ex) { throw new ArgumentException("Failed to parse chapterinfo json file", ex); }
+		}
+
+		private AAXClean.ChapterInfo GetIndividualChapters()
+		{
+
+			Chapters.Sort((c1, c2) => c1.StartOffsetMs.CompareTo(c2.StartOffsetMs));
+
+			var chInfo = new AAXClean.ChapterInfo();
 
 			foreach (var c in Chapters)
-				chInfo.AddChapter(c.Title, c.Duration);
+				chInfo.AddChapter(c.Title, TimeSpan.FromMilliseconds(c.LengthMs));
 
 			return chInfo;
 		}
@@ -78,6 +108,7 @@ namespace aaxclean_cli
 				OutputToFile.Directory.Create();
 			return OutputToFile.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
 		}
+
 		private AaxFile GetAaxFromFile()
 		{
 			var inFile = InputFromFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read);

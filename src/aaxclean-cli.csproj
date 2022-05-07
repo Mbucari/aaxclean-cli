@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>aaxclean_cli</RootNamespace>
-    <Version>0.1.3</Version>
+    <Version>0.1.4</Version>
     <Authors>MrGneissGuy</Authors>
     <Company>Just Me, Inc.</Company>
     <Description>Command line interface for AAXClean</Description>
@@ -22,12 +22,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AAXClean" Version="0.4.2" />
+    <PackageReference Include="AAXClean" Version="0.4.3" />
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
-  </ItemGroup>
-
-  <ItemGroup>
-	  <ProjectReference Include="..\..\AAXClean\src\AAXClean\AAXClean.csproj" Condition="'$(Configuration)'=='Debug'" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>
