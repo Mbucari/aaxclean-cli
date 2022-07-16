@@ -70,9 +70,11 @@ namespace aaxclean_cli
 				aaxFile.ConversionProgressUpdate += AaxFile_ConversionProgressUpdate;
 
 				DateTime startTime = DateTime.Now;
-
-				var result = await aaxFile.ConvertToMp4aAsync(aaxConversionOptions.GetOutputStream(), chapters);
-
+				int chNum = 1;
+				var result
+					= aaxConversionOptions.SplitFileByChapters
+					? await aaxFile.ConvertToMultiMp4aAsync(chapters ?? aaxFile.GetChaptersFromMetadata(), cb => cb.OutputFile = aaxConversionOptions.GetOutputStream(chNum++))
+					: await aaxFile.ConvertToMp4aAsync(aaxConversionOptions.GetOutputStream(), chapters);
 
 				var duration = DateTime.Now - startTime;
 
@@ -101,6 +103,11 @@ namespace aaxclean_cli
 
 				return await Task.FromResult(-2); ;
 			}
+		}
+		
+		private static void NewSplitCallback(NewSplitCallback newSplit)
+		{
+
 		}
 
 		private static void ListChapters(string prefix, AAXClean.ChapterInfo chInfo)

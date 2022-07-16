@@ -15,7 +15,7 @@ namespace aaxclean_cli
 	[ArgumentGroupCertification("file,url", EArgumentGroupCondition.ExactlyOneUsed)]
 	[DistinctGroupsCertification("audible_key,audible_iv", "activation_bytes")]
 	[ArgumentGroupCertification("audible_key,audible_iv", EArgumentGroupCondition.AllOrNoneUsed)]
-	[ArgumentGroupCertification("chapter,chapter_info,list-chapters", EArgumentGroupCondition.ExactlyOneUsed)]
+	[ArgumentGroupCertification("chapter,chapter_info,list-chapters", EArgumentGroupCondition.OneOreNoneUsed)]
 	public class AaxConversionOptions
 	{
 		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file", FileMustExist = true)]
@@ -47,6 +47,9 @@ namespace aaxclean_cli
 
 		[FileArgument('o', "outfile", AllowMultiple = false, Description = "Output file to write the decrypted m4b", Optional = true, FileMustExist = false)]
 		public FileInfo OutputToFile;
+
+		[SwitchArgument('s', false, Description = "Split file int myltiple files by chapters\r\nIf this option is specified, output file names are prepended with the chapter number.", Optional = true)]
+		public bool SplitFileByChapters;
 
 		[SwitchArgument("list-chapters", false, Description = "List the chapters from metadata", Optional = true)]
 		public bool ListChapters;
@@ -107,6 +110,13 @@ namespace aaxclean_cli
 			if (!OutputToFile.Directory.Exists)
 				OutputToFile.Directory.Create();
 			return OutputToFile.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+		}
+
+		public Stream GetOutputStream(int chapter)
+		{
+			if (!OutputToFile.Directory.Exists)
+				OutputToFile.Directory.Create();
+			return File.Open(Path.Combine(OutputToFile.Directory.FullName,$"{chapter:d2} - {OutputToFile.Name}"), FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
 		}
 
 		private AaxFile GetAaxFromFile()

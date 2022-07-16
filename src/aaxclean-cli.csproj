@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AAXClean" Version="0.4.3" />
+    <PackageReference Include="AAXClean" Version="0.4.9" />
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
