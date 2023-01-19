@@ -66,36 +66,31 @@ namespace aaxclean_cli
 				}
 
 
-
-				aaxFile.ConversionProgressUpdate += AaxFile_ConversionProgressUpdate;
-
 				DateTime startTime = DateTime.Now;
 				int chNum = 1;
-				var result
+				var operation
 					= aaxConversionOptions.SplitFileByChapters
-					? await aaxFile.ConvertToMultiMp4aAsync(chapters ?? aaxFile.GetChaptersFromMetadata(), cb => cb.OutputFile = aaxConversionOptions.GetOutputStream(chNum++))
-					: await aaxFile.ConvertToMp4aAsync(aaxConversionOptions.GetOutputStream(), chapters);
+					? aaxFile.ConvertToMultiMp4aAsync(chapters ?? aaxFile.GetChaptersFromMetadata(), cb => cb.OutputFile = aaxConversionOptions.GetOutputStream(chNum++))
+					: aaxFile.ConvertToMp4aAsync(aaxConversionOptions.GetOutputStream(), chapters);
+
+				operation.ConversionProgressUpdate += AaxFile_ConversionProgressUpdate;
+
+				await operation;
 
 				var duration = DateTime.Now - startTime;
 
+
 				ConsoleText.WriteLine();
+				WriteColoredLine(
+					("\r\nConversion succeeded!", ConsoleColor.Green),
+					($"  Total time: {duration:mm\\:ss\\.ff}", ConsoleColor.White));
 
-				if (result == ConversionResult.Failed)
-				{
-					WriteColoredLine(("Conversion Failed!", ConsoleColor.Red));
-					return await Task.FromResult(-2);
-				}
-				else
-				{
-					WriteColoredLine(
-						("\r\nConversion succeeded!", ConsoleColor.Green),
-						($"  Total time: {duration:mm\\:ss\\.ff}", ConsoleColor.White));
+				return 0;
 
-					return await Task.FromResult(0);
-				}
 			}
 			catch (Exception ex)
 			{
+				ConsoleText.WriteLine();
 				WriteColoredLine(
 					("Error Converting Book", ConsoleColor.Red),
 					(": ", ConsoleColor.White),
@@ -105,11 +100,6 @@ namespace aaxclean_cli
 			}
 		}
 		
-		private static void NewSplitCallback(NewSplitCallback newSplit)
-		{
-
-		}
-
 		private static void ListChapters(string prefix, AAXClean.ChapterInfo chInfo)
 		{
 			if (chInfo is null)
