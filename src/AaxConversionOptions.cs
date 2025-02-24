@@ -1,13 +1,12 @@
 ﻿using AAXClean;
 using CommandLineParser.Arguments;
 using CommandLineParser.Validation;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 
 namespace aaxclean_cli
 {
@@ -79,7 +78,7 @@ namespace aaxclean_cli
 			try
 			{
 				string json = File.ReadAllText(ChapterInfoFile.FullName);
-				var audible_chInfo = JsonConvert.DeserializeObject<ChapterInfo>(json);
+				var audible_chInfo = JsonSerializer.Deserialize<RootObject>(json).ChapterInfo;
 
 				Array.Sort(audible_chInfo.Chapters, (c1, c2) => c1.StartOffsetMs.CompareTo(c2.StartOffsetMs));
 
@@ -90,7 +89,7 @@ namespace aaxclean_cli
 
 				return chInfo;
 			}
-			catch (Exception ex) { throw new ArgumentException("Failed to parse chapterinfo json file", ex); }
+			catch (Exception ex) { throw new ArgumentException("Failed to parse chapter_info json file", ex); }
 		}
 
 		private AAXClean.ChapterInfo GetIndividualChapters()

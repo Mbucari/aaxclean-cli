@@ -23,9 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
-
 	  <PackageReference Include="AAXClean" Version="1.1.4" />
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>

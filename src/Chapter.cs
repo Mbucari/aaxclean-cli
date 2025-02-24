@@ -1,21 +1,21 @@
 ﻿using CommandLineParser.Exceptions;
-using Newtonsoft.Json;
 using System;
+using System.Text.Json.Serialization;
 
 namespace aaxclean_cli
 {
 	public class Chapter
 	{
-		[JsonProperty("length_ms")]
+		[JsonPropertyName("length_ms")]
 		public long LengthMs { get; set; }
 
-		[JsonProperty("start_offset_ms")]
+		[JsonPropertyName("start_offset_ms")]
 		public long StartOffsetMs { get; set; }
 
-		[JsonProperty("start_offset_sec")]
+		[JsonPropertyName("start_offset_sec")]
 		public long StartOffsetSec { get; set; }
 
-		[JsonProperty("title")]
+		[JsonPropertyName("title")]
 		public string Title { get; set; }
 
 		public static Chapter Parse(string argStr)
