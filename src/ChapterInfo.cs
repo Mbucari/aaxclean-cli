@@ -28,4 +28,10 @@ namespace aaxclean_cli
         [JsonPropertyName("runtime_length_sec")]
         public long RuntimeLengthSec { get; set; }
     }
+
+	[JsonSourceGenerationOptions(WriteIndented = true)]
+	[JsonSerializable(typeof(RootObject))]
+	internal partial class SourceGenerationContext : JsonSerializerContext
+	{
+	}
 }

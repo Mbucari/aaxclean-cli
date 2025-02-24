@@ -1,5 +1,4 @@
-﻿using CommandLineParser.Exceptions;
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 
 namespace aaxclean_cli
@@ -17,21 +16,27 @@ namespace aaxclean_cli
 
 		[JsonPropertyName("title")]
 		public string Title { get; set; }
-
-		public static Chapter Parse(string argStr)
+		public Chapter() { }
+		public Chapter(string chapter)
 		{
-			var split = argStr.Split('|', StringSplitOptions.RemoveEmptyEntries);
+			if (chapter is null)
+				throw new ArgumentNullException(nameof(chapter));
 
-			if (split.Length!=3)
-					throw new CommandLineArgumentException("Chapter format is \"Title|start_ms|duration_ms\"", "chapter");
-			
+			var split = chapter.Split('|', StringSplitOptions.RemoveEmptyEntries);
+
+			if (split.Length != 3)
+				throw new Exception("Chapter format is \"Title|start_ms|duration_ms\"");
+
 			if (!long.TryParse(split[1], out long startMs) || startMs < 0)
-				throw new CommandLineArgumentException("start_ms must be number of decimal seconds", "chapter");
+				throw new Exception("Chapter start_ms must be number of decimal seconds");
 
 			if (!long.TryParse(split[2], out long durationMs) || durationMs < 0)
-				throw new CommandLineArgumentException("duration_ms must be number of decimal seconds", "chapter");
+				throw new Exception("Chapter duration_ms must be number of decimal seconds");
 
-			return new Chapter { Title = split[0], StartOffsetMs = startMs, StartOffsetSec = startMs / 1000, LengthMs = durationMs };
+			Title = split[0];
+			StartOffsetMs = startMs;
+			StartOffsetSec = startMs / 1000;
+			LengthMs = durationMs;
 		}
 	}
 }

@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>aaxclean_cli</RootNamespace>
-    <Version>1.1.4</Version>
+    <Version>1.1.5</Version>
     <Authors>MrGneissGuy</Authors>
     <Company>Just Me, Inc.</Company>
     <Description>Command line interface for AAXClean</Description>
@@ -14,16 +14,17 @@
     <PackageTags>Audible AAC AAXC m4b audiobook</PackageTags>
     <PackageReleaseNotes>Added list-chapters and console colors</PackageReleaseNotes>
     <NeutralLanguage>English</NeutralLanguage>
+	<PublishSingleFile>true</PublishSingleFile>
+	<PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>embedded</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DebugSymbols>False</DebugSymbols>
+		<DebugType>None</DebugType>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
-	  <PackageReference Include="AAXClean" Version="1.1.4" />
+	<ItemGroup>
+	  <PackageReference Include="AAXClean" Version="1.1.5" />
   </ItemGroup>
 
 </Project>

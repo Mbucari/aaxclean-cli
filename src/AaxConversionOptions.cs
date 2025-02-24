@@ -1,62 +1,35 @@
 ﻿using AAXClean;
-using CommandLineParser.Arguments;
-using CommandLineParser.Validation;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 
 namespace aaxclean_cli
 {
-
-	[DistinctGroupsCertification("url,user_agent,cookie", "file")]
-	[ArgumentGroupCertification("file,url", EArgumentGroupCondition.ExactlyOneUsed)]
-	[DistinctGroupsCertification("audible_key,audible_iv", "activation_bytes")]
-	[ArgumentGroupCertification("audible_key,audible_iv", EArgumentGroupCondition.AllOrNoneUsed)]
-	[ArgumentGroupCertification("chapter,chapter_info,list-chapters", EArgumentGroupCondition.OneOreNoneUsed)]
-	public class AaxConversionOptions
+	public partial class AaxConversionOptions
 	{
-		[FileArgument('f', "file", AllowMultiple = false, Description = "Aax(c) input from file", FileMustExist = true)]
-		public FileInfo InputFromFile;
+		public string InputFromFile { get; set; }
+		public string InputFromUrl { get; set; }
+		public List<string> UrlUserAgent { get; set; } = new();
+		public List<Cookie> Cookies { get; set; } = new();
+		public FixedLengthByteString AudibleActivationBytes { get; set; }
+		public FixedLengthByteString AudibleKey { get; set; }
+		public FixedLengthByteString AudibleIV { get; set; }
+		public List<Chapter> Chapters { get; set; } = new();
+		public string ChapterInfoFile { get; set; }
+		public string OutputToFile { get; set; }
+		public bool SplitFileByChapters { get; set; }
+		public bool ListChapters { get; set; }
+		public int ReturnCode { get; set; }
 
-		[ValueArgument(typeof(string), 'u', "url", AllowMultiple = false, Description = "Aax(c) input from http(s) url")]
-		public string InputFromUrl;
 
-		[ValueArgument(typeof(string), "user_agent", AllowMultiple = false, Description = "Http(s) user agent", FullDescription = "Default is \"Audible/671 CFNetwork/1240.0.4 Darwin/20.6.0\"", DefaultValue = "Audible/671 CFNetwork/1240.0.4 Darwin/20.6.0")]
-		public string UrlUserAgent;
-
-		[ValueArgument(typeof(Cookie), "cookie", AllowMultiple = true, Description = "Http(s) cookie", Example = "--cookie \"name1|value1\" --cookie \"name2|value2\"")]
-		public List<Cookie> Cookies;
-
-		[ValueArgument(typeof(ActivationByteString), "activation_bytes", AllowMultiple = false, Description = "Aax file activation bytes", Example = "a0b1c2d3")]
-		public ActivationByteString AudibleActivationBytes;
-
-		[ValueArgument(typeof(AaxcKeyByteString), "audible_key", AllowMultiple = false, Description = "Aaxc file key", Example = "a0b1c2d3e4f5a0b1c2d3e4f5a0b1c2d3")]
-		public AaxcKeyByteString AudibleKey;
-
-		[ValueArgument(typeof(AaxcIVByteString), "audible_iv", AllowMultiple = false, Description = "Aaxc file iv", Example = "c2d3e4f5a0b1c2d3a0b1c2d3e4f5a0b1")]
-		public AaxcIVByteString AudibleIV;
-
-		[ValueArgument(typeof(Chapter), "chapter", AllowMultiple = true, Description = "user-defined chapter marker: Title|start_ms|duration_ms", Example = "--chapter \"Chapter 1|0|1345245\" --chapter \"Chapter 2|1345245|2411579\"")]
-		public List<Chapter> Chapters;
-
-		[FileArgument("chapter_info", AllowMultiple = false, Description = "file path to an Audible Api chapter_info json structure", Optional = true, FileMustExist = true)]
-		public FileInfo ChapterInfoFile;
-
-		[FileArgument('o', "outfile", AllowMultiple = false, Description = "Output file to write the decrypted m4b", Optional = true, FileMustExist = false)]
-		public FileInfo OutputToFile;
-
-		[SwitchArgument('s', false, Description = "Split file int myltiple files by chapters\r\nIf this option is specified, output file names are prepended with the chapter number.", Optional = true)]
-		public bool SplitFileByChapters;
-
-		[SwitchArgument("list-chapters", false, Description = "List the chapters from metadata", Optional = true)]
-		public bool ListChapters;
 
 		public AaxFile GetInputFile()
 		{
-			var aaxFile = InputFromFile is not null ? GetAaxFromFile() : GetAaxFromUrl();
+			var aaxFile = File.Exists(InputFromFile) ? GetAaxFromFile() : GetAaxFromUrl();
 
 			if (AudibleActivationBytes is not null)
 				aaxFile.SetDecryptionKey(AudibleActivationBytes.Bytes);
@@ -68,8 +41,8 @@ namespace aaxclean_cli
 
 		public AAXClean.ChapterInfo GetUserChapters()
 		{
-			if (Chapters.Count != 0) return GetIndividualChapters();
-			else if (ChapterInfoFile is not null) return GetJsonChapters();
+			if (Chapters.Any()) return GetIndividualChapters();
+			else if (File.Exists(ChapterInfoFile)) return GetJsonChapters();
 			return null;
 		}
 
@@ -77,8 +50,9 @@ namespace aaxclean_cli
 		{
 			try
 			{
-				string json = File.ReadAllText(ChapterInfoFile.FullName);
-				var audible_chInfo = JsonSerializer.Deserialize<RootObject>(json).ChapterInfo;
+				string json = File.ReadAllText(ChapterInfoFile);
+
+				var audible_chInfo = JsonSerializer.Deserialize(json, SourceGenerationContext.Default.RootObject).ChapterInfo;
 
 				Array.Sort(audible_chInfo.Chapters, (c1, c2) => c1.StartOffsetMs.CompareTo(c2.StartOffsetMs));
 
@@ -94,12 +68,9 @@ namespace aaxclean_cli
 
 		private AAXClean.ChapterInfo GetIndividualChapters()
 		{
-
-			Chapters.Sort((c1, c2) => c1.StartOffsetMs.CompareTo(c2.StartOffsetMs));
-
 			var chInfo = new AAXClean.ChapterInfo();
 
-			foreach (var c in Chapters)
+			foreach (var c in Chapters.OrderBy(c => c.StartOffsetMs))
 				chInfo.AddChapter(c.Title, TimeSpan.FromMilliseconds(c.LengthMs));
 
 			return chInfo;
@@ -107,21 +78,24 @@ namespace aaxclean_cli
 
 		public Stream GetOutputStream()
 		{
-			if (!OutputToFile.Directory.Exists)
-				OutputToFile.Directory.Create();
-			return OutputToFile.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+			var outDir = Path.GetDirectoryName(OutputToFile);
+			if (!Directory.Exists(outDir))
+				Directory.CreateDirectory(outDir);
+			return File.Open(OutputToFile, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
 		}
 
 		public Stream GetOutputStream(int chapter)
 		{
-			if (!OutputToFile.Directory.Exists)
-				OutputToFile.Directory.Create();
-			return File.Open(Path.Combine(OutputToFile.Directory.FullName,$"{chapter:d2} - {OutputToFile.Name}"), FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+			var outDir = Path.GetDirectoryName(OutputToFile);
+			var fileName = Path.GetFileName(OutputToFile);
+			if (!Directory.Exists(outDir))
+				Directory.CreateDirectory(outDir);
+			return File.Open(Path.Combine(outDir, $"{chapter:d2} - {fileName}"), FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
 		}
 
 		private AaxFile GetAaxFromFile()
 		{
-			var inFile = InputFromFile.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+			var inFile = File.Open(InputFromFile, FileMode.Open, FileAccess.Read, FileShare.Read);
 
 			return new AaxFile(inFile, inFile.Length);
 		}

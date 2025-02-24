@@ -9,28 +9,18 @@ namespace aaxclean_cli
 	class Program
 	{
 		private static readonly TextWriter ConsoleText = Console.Error;
+
 		public static async Task<int> Main(string[] args)
 		{
-			CommandLineParser.CommandLineParser parser = new();
-
-			AaxConversionOptions aaxConversionOptions = new();
-
-			parser.ExtractArgumentAttributes(aaxConversionOptions);
-
 			if (args is null || args.Length == 0)
 			{
-				parser.PrintUsage(ConsoleText);
-				return await Task.FromResult(-1);
+				AaxConversionOptions.PrintUsage();
+				return -1;
 			}
 			try
 			{
-				parser.ParseCommandLine(args);
-			}
-			catch (CommandLineParser.Exceptions.CommandLineException ex)
-			{
-				WriteColoredLine((ex.Message, ConsoleColor.Red));
-
-				return await Task.FromResult(-1);
+				var options = AaxConversionOptions.Parse(args);
+				return await RunAsync(options);
 			}
 			catch (Exception ex)
 			{
@@ -39,9 +29,14 @@ namespace aaxclean_cli
 					   (": ", ConsoleColor.White),
 					   (ex.Message, ConsoleColor.DarkRed));
 
-				return await Task.FromResult(-2);
-			}
 
+				AaxConversionOptions.PrintUsage();
+				return await Task.FromResult(-2);
+			}			
+		}
+
+		private static async Task<int> RunAsync(AaxConversionOptions aaxConversionOptions)
+		{
 			try
 			{
 				var chapters = aaxConversionOptions.GetUserChapters();
@@ -96,7 +91,7 @@ namespace aaxclean_cli
 					(": ", ConsoleColor.White),
 					(ex.Message, ConsoleColor.DarkRed));
 
-				return await Task.FromResult(-2); ;
+				return -2;
 			}
 		}
 		

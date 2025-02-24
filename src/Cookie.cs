@@ -1,4 +1,4 @@
-﻿using CommandLineParser.Exceptions;
+﻿using System;
 
 namespace aaxclean_cli
 {
@@ -11,19 +11,23 @@ namespace aaxclean_cli
 			return $"{Name}={Value}";
 		}
 
-		public static Cookie Parse(string stringValue)
+		public Cookie(string cookie)
 		{
-			var split = stringValue.Split('|', System.StringSplitOptions.RemoveEmptyEntries);
+			if (cookie is null)
+				throw new ArgumentNullException(nameof(cookie));
 
+			var split = cookie.Split('|', StringSplitOptions.RemoveEmptyEntries);
 			if (split.Length != 2)
-				throw new CommandLineArgumentException("Cookie format is \"name|value\"", "cookie");
+				throw new Exception("Cookie format is \"name|value\"");
 
 			split[0] = split[0].Trim();
 			split[1] = split[1].Trim();
 
 			if (string.IsNullOrEmpty(split[0]) || string.IsNullOrEmpty(split[1]))
-				throw new CommandLineArgumentException("Cookie format is \"name|value\"", "cookie");
-			return new Cookie { Name = split[0], Value = split[1] };
+				throw new Exception("Cookie format is \"name|value\"");
+
+			Name = split[0];
+			Value = split[1];
 		}
 	}
 }
