@@ -136,7 +136,7 @@ namespace aaxclean_cli
 			ReWriteColored
 				(
 				("Conversion progress", ConsoleColor.Green),
-				($": {e.ProcessPosition / e.TotalDuration * 100:F2}%    ", ConsoleColor.White),
+				($": {e.FractionCompleted:P2}    ", ConsoleColor.White),
 				("average speed", ConsoleColor.Green),
 				($" = {(int)e.ProcessSpeed}x", ConsoleColor.White)
 				);

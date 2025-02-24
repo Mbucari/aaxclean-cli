@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 
 namespace aaxclean_cli
 {
@@ -130,23 +131,21 @@ namespace aaxclean_cli
 		{
 			var uri = new Uri(InputFromUrl);
 
-			var httpRequest = WebRequest.CreateHttp(uri);
-			httpRequest.Headers = new WebHeaderCollection
-			{
-				{ "User-Agent", UrlUserAgent }
-			};
-
-			httpRequest.CookieContainer = new CookieContainer();
+			var cookieContainer = new CookieContainer();
+			using var handler = new HttpClientHandler { CookieContainer = cookieContainer };
+			using var client = new HttpClient(handler);
+			using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+			request.Headers.Add("User-Agent", UrlUserAgent);			
 
 			foreach (var c in Cookies)
 			{
-				httpRequest.CookieContainer.Add(uri, new System.Net.Cookie(c.Name, c.Value));
+				cookieContainer.Add(uri, new System.Net.Cookie(c.Name, c.Value));
 			}
-			var response = httpRequest.GetResponse() as HttpWebResponse;
 
-			var stream = response.GetResponseStream();
+			var response = client.Send(request, HttpCompletionOption.ResponseHeadersRead);
+			var stream = response.Content.ReadAsStream();
 
-			return new AaxFile(stream, response.ContentLength);
+			return new AaxFile(stream,  response.Content.Headers.ContentLength.Value);
 		}
 	}
 }
