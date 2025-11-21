@@ -34,7 +34,7 @@ jobs:
         id: publish
         working-directory: ./src
         run: |
-          brew install llvm
+          brew install binutils
           NATIVE=$([ "${{ inputs.native }}" == "Native" ] && echo "true" || echo "false")
           
           dotnet  publish aaxclean-cli.csproj \
