@@ -1,6 +1,7 @@
 ﻿using AAXClean;
 using System;
 using System.Collections.Generic;
+using System.Formats.Tar;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,6 +19,10 @@ public partial class AaxConversionOptions
 	public FixedLengthByteString AudibleActivationBytes { get; private set; }
 	public FixedLengthByteString AudibleKey { get; private set; }
 	public FixedLengthByteString AudibleIV { get; private set; }
+	public FixedLengthByteString EncryptionKid { get; private set; }
+	public FixedLengthByteString EncryptionKey { get; private set; }
+	public bool IsDash => EncryptionKid is not null && EncryptionKey is not null;
+	public bool IsAaxc => AudibleKey is not null && AudibleIV is not null;
 	public List<Chapter> Chapters { get; private set; } = new();
 	public string ChapterInfoFile { get; private set; }
 	public string OutputToFile { get; private set; }
@@ -25,16 +30,9 @@ public partial class AaxConversionOptions
 	public bool ListChapters { get; private set; }
 	public int ReturnCode { get; private set; }
 
-	public AaxFile GetInputFile()
+	public Mp4File GetInputFile()
 	{
-		var aaxFile = File.Exists(InputFromFile) ? GetAaxFromFile() : GetAaxFromUrl();
-
-		if (AudibleActivationBytes is not null)
-			aaxFile.SetDecryptionKey(AudibleActivationBytes.Bytes);
-		else if (AudibleKey is not null && AudibleIV is not null)
-			aaxFile.SetDecryptionKey(AudibleKey.Bytes, AudibleIV.Bytes);
-
-		return aaxFile;
+		return File.Exists(InputFromFile) ? GetAaxFromFile() : GetAaxFromUrl();
 	}
 
 	public AAXClean.ChapterInfo GetUserChapters()
@@ -91,14 +89,13 @@ public partial class AaxConversionOptions
 		return File.Open(Path.Combine(outDir, $"{chapter:d2} - {fileName}"), FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
 	}
 
-	private AaxFile GetAaxFromFile()
+	private Mp4File GetAaxFromFile()
 	{
 		var inFile = File.Open(InputFromFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-		return new AaxFile(inFile, inFile.Length);
+		return OpenStream(inFile, inFile.Length);
 	}
 
-	private AaxFile GetAaxFromUrl()
+	private Mp4File GetAaxFromUrl()
 	{
 		var uri = new Uri(InputFromUrl);
 
@@ -116,6 +113,33 @@ public partial class AaxConversionOptions
 		var response = client.Send(request, HttpCompletionOption.ResponseHeadersRead);
 		var stream = response.Content.ReadAsStream();
 
-		return new AaxFile(stream, response.Content.Headers.ContentLength.Value);
+		return OpenStream(stream, response.Content.Headers.ContentLength.Value);
+	}
+
+
+	private Mp4File OpenStream(Stream stream, long length)
+	{
+		if (EncryptionKid is not null && EncryptionKey is not null)
+		{
+			var dashFile = new DashFile(stream, length);
+			dashFile.SetDecryptionKey(EncryptionKid.Bytes, EncryptionKey.Bytes);
+			return dashFile;
+		}
+		else if(AudibleIV is not null && AudibleIV is not null)
+		{
+			var aaxFile = new AaxFile(stream, length);
+			aaxFile.SetDecryptionKey(AudibleKey.Bytes, AudibleIV.Bytes);
+			return aaxFile;
+		}
+		else if (AudibleActivationBytes is not null)
+		{
+			var aaxFile = new AaxFile(stream, length);
+			aaxFile.SetDecryptionKey(AudibleActivationBytes.Bytes);
+			return aaxFile;
+		}
+		else
+		{
+			return new Mp4File(stream, length);
+		}
 	}
 }

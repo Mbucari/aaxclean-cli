@@ -54,12 +54,14 @@ internal class Program
 
 			if (aaxConversionOptions.OutputToFile is null) return 0;
 
-			if (aaxFile.Key is null || aaxFile.IV is null)
+			if (aaxFile is not (AaxFile or DashFile))
 			{
-				WriteColoredLine(("ERROR: Aax key file not found", ConsoleColor.Red));
+				if (aaxFile.FileType is FileType.Mpeg4)
+					WriteColoredLine(("ERROR: Cannot convert an unencrypted file", ConsoleColor.Red));
+				else
+					WriteColoredLine(("ERROR: Cannot convert an encrypted file without keys", ConsoleColor.Red));
 				return -3;
 			}
-
 
 			DateTime startTime = DateTime.Now;
 			int chNum = 1;
@@ -73,7 +75,6 @@ internal class Program
 			await operation;
 
 			var duration = DateTime.Now - startTime;
-
 
 			ConsoleText.WriteLine();
 			WriteColoredLine(

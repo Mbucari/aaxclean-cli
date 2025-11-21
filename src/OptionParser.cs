@@ -61,6 +61,12 @@ public partial class AaxConversionOptions
 				case "--audible_iv":
 					options.AudibleIV = new FixedLengthByteString(GetNextArgument(), 16, "audible_iv");
 					break;
+				case "--encryption_kid":
+					options.EncryptionKid = new FixedLengthByteString(GetNextArgument(), 16, "encryption_kid");
+					break;
+				case "--encryption_key":
+					options.EncryptionKey = new FixedLengthByteString(GetNextArgument(), 16, "encryption_key");
+					break;
 				case "--chapter":
 					options.Chapters.Add(new Chapter(GetNextArgument()));
 					break;
@@ -89,11 +95,14 @@ public partial class AaxConversionOptions
 			}
 		}
 
-		if (options.AudibleActivationBytes != null && (options.AudibleKey != null || options.AudibleIV != null))
-			throw new Exception("Specify either activation_bytes or audible_key and audible_iv");
+		if (options.AudibleActivationBytes != null && (options.AudibleKey != null || options.AudibleIV != null) && (options.EncryptionKid != null || options.EncryptionKey != null))
+			throw new Exception("Specify either activation_bytes, or audible_key and audible_iv, or encryption_kid and encryption_key");
 
 		if (options.AudibleKey == null ^ options.AudibleIV == null)
 			throw new Exception("audible_key and audible_iv must be specified together");
+
+		if (options.EncryptionKid == null ^ options.EncryptionKey == null)
+			throw new Exception("encryption_kid and encryption_key must be specified together");
 
 		if (options.UrlUserAgent.Count == 0)
 			options.UrlUserAgent.Add(DefaultUserAgent);
@@ -123,6 +132,12 @@ public partial class AaxConversionOptions
 			Example: a0b1c2d3e4f5a0b1c2d3e4f5a0b1c2d3
 
 			        --audible_iv[optional]... Aaxc file iv (32-digit hex string)
+			Example: c2d3e4f5a0b1c2d3a0b1c2d3e4f5a0b1
+
+			        --encryption_kid[optional]... Mpeg Dash file key ID (32-digit hex string)
+			Example: a0b1c2d3e4f5a0b1c2d3e4f5a0b1c2d3
+
+			        --encryption_key[optional]...Mpeg Dash file decryption key (32-digit hex string)
 			Example: c2d3e4f5a0b1c2d3a0b1c2d3e4f5a0b1
 
 			        --chapter[optional]... user-defined chapter marker: Title|start_ms|duration_ms
