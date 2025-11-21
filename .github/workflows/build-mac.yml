@@ -25,17 +25,13 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
-          
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-
+ 
       - name: Publish
         id: publish
         working-directory: ./src
         run: |
-          brew install binutils
           NATIVE=$([ "${{ inputs.native }}" == "Native" ] && echo "true" || echo "false")
+          STRIP=$([ "${{ inputs.native }}" == "Native" ] && echo "false" || echo "true")
           
           dotnet  publish aaxclean-cli.csproj \
               --os linux \
@@ -44,7 +40,8 @@ jobs:
               --output ./../bin \
               -p:PublishProtocol=FileSystem \
               -p:SelfContained=true \
-              -p:PublishAot=$NATIVE
+              -p:PublishAot=$NATIVE \
+              -p:StripSymbols=$STRIP
 
       - name: Build bundle
         id: bundle
