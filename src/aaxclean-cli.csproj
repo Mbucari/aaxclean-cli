@@ -29,4 +29,8 @@
 	  <PackageReference Include="AAXClean" Version="2.1.0.1" />
   </ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Properties\PublishProfiles\" />
+	</ItemGroup>
+
 </Project>

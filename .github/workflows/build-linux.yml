@@ -6,7 +6,7 @@ name: build
 on:
   workflow_call:
     inputs:
-      libation-version:
+      aaxclean-version:
         type: string
       architecture:
         type: string
@@ -33,7 +33,7 @@ jobs:
           NATIVE=$([ "${{ inputs.native }}" == "Native" ] && echo "true" || echo "false")
           echo $NATIVE
           
-          dotnet  publish aaxclean-cli.csproj \
+          dotnet publish aaxclean-cli.csproj \
               --os linux \
               --arch ${{ inputs.architecture }} \
               --configuration Release \
@@ -44,17 +44,18 @@ jobs:
 
       - name: Build bundle
         id: bundle
-        run: |        
-          EXEC=$(ls ./bin)
-          artifact="aaxclean-cli${{ inputs.libation-version }}-linux-${{ inputs.architecture }}${{ inputs.native }}"
-          
-          tar -cvz -f "$artifact" ./bin/$EXEC
+        working-directory: ./bin
+        run: |
+          NATIVE=$([ "${{ inputs.native }}" == "Native" ] && echo "-native" || echo "")
+          artifact="aaxclean-cli-v${{ inputs.aaxclean-version }}-linux-${{ inputs.architecture }}$NATIVE.tar.gz"
+                    
+          tar -cvz -f "$artifact" *
           echo "artifact=${artifact}" >> "${GITHUB_OUTPUT}"
           
       - name: Publish bundle
         uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.bundle.outputs.artifact }}
-          path: ./${{ steps.bundle.outputs.artifact }}
+          path: ./bin/${{ steps.bundle.outputs.artifact }}
           if-no-files-found: error
           retention-days: 7

@@ -5,7 +5,7 @@ name: build
 on:
   workflow_call:
     inputs:
-      libation-version:
+      aaxclean-version:
         type: string
         description: "Libation version number"
         required: true
@@ -22,11 +22,10 @@ jobs:
         include:
           - architecture: arm64
           - architecture: x64
-          - architecture: x64
             native: Native
     uses: ./.github/workflows/build-linux.yml
     with:
-      libation-version: ${{ inputs.libation-version }}
+      aaxclean-version: ${{ inputs.aaxclean-version }}
       dotnet-version: ${{ inputs.dotnet-version }}
       architecture: ${{ matrix.architecture }}
       native: ${{ matrix.native }}
@@ -34,15 +33,20 @@ jobs:
   mac:
     strategy:
       matrix:
-        include:
-          - architecture: x64
-          - architecture: arm64
-          - architecture: arm64
-            native: Native
+        architecture: [arm64, x64]
     uses: ./.github/workflows/build-mac.yml
     with:
-      libation-version: ${{ inputs.libation-version }}
+      aaxclean-version: ${{ inputs.aaxclean-version }}
       dotnet-version: ${{ inputs.dotnet-version }}
       architecture: ${{ matrix.architecture }}
-      native: ${{ matrix.native }}
+      native: Native
       
+  windows:
+    strategy:
+      matrix:
+        architecture: [x86, x64]
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      aaxclean-version: ${{ inputs.aaxclean-version }}
+      dotnet-version: ${{ inputs.dotnet-version }}
+      architecture: ${{ matrix.architecture }}

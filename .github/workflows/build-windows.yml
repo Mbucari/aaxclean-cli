@@ -5,7 +5,7 @@ name: build
 on:
   workflow_call:
     inputs:
-      libation-version:
+      aaxclean-version:
         type: string
       architecture:
         type: string
@@ -14,48 +14,38 @@ on:
 
 jobs:
   build:
-    name: "win-${{ inputs.architecture }}"
+    name: "win-${{ inputs.architecture }} Native"
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: ${{ inputs.dotnet-version }}
 
       - name: Publish
         working-directory: ./src
         run: |
-          $RUNTIME_ID="win-${{ inputs.architecture }}"
-          
-          $OUTPUT="bin/Publish/win-${{ inputs.architecture }}"
-          
-          echo "Runtime Identifier: $RUNTIME_ID"
-          echo "Output Directory: $OUTPUT"
-          
           dotnet publish `
-              aaxclean-cli/aaxclean-cli.csproj `
-              --OS linux `
+              aaxclean-cli.csproj `
+              --os win `
               --arch ${{ inputs.architecture }} `
-              --configuration ${{ env.DOTNET_CONFIGURATION }} `
-              --output ./../ `
-              -p:PublishProtocol=FileSystem `
+              --configuration Release `
+              --output ./../bin `
               -p:SelfContained=true `
               -p:PublishAot=true          
 
       - name: Zip artifact
         id: zip
-        working-directory: 
         run: |
-          $bin_dir = "win-${{ inputs.architecture }}\"
-          $artifact="GEHistoricalImagery.${{ steps.get_version.outputs.version }}-win-${{ inputs.architecture }}.zip"
+          $artifact="aaxclean-cli-v${{ inputs.aaxclean-version }}-windows-${{ inputs.architecture }}-native.zip"
           "artifact=$artifact" >> $env:GITHUB_OUTPUT
-          Compress-Archive -Path "${bin_dir}*" -DestinationPath "$artifact"
+          Compress-Archive -Path ".\bin\*" -DestinationPath "$artifact"
 
       - name: Publish artifact
         uses: actions/upload-artifact@v5
         with:
-          name: GEHistoricalImagery.${{ steps.get_version.outputs.version }}-win-${{ inputs.architecture }}.zip
-          path: ./src/bin/Publish/${{ steps.zip.outputs.artifact }}
+          name: ${{ steps.zip.outputs.artifact }}
+          path: ./${{ steps.zip.outputs.artifact }}
           if-no-files-found: error
           retention-days: 7

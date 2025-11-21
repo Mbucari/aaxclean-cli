@@ -1,12 +1,11 @@
 # build-linux.yml
-# Reusable workflow that builds the Linux and MacOS (x64 and arm64) versions of Libation.
 ---
 name: build
 
 on:
   workflow_call:
     inputs:
-      libation-version:
+      aaxclean-version:
         type: string
       architecture:
         type: string
@@ -31,31 +30,30 @@ jobs:
         working-directory: ./src
         run: |
           NATIVE=$([ "${{ inputs.native }}" == "Native" ] && echo "true" || echo "false")
-          STRIP=$([ "${{ inputs.native }}" == "Native" ] && echo "false" || echo "true")
           
           dotnet  publish aaxclean-cli.csproj \
-              --os linux \
+              --os osx \
               --arch ${{ inputs.architecture }} \
               --configuration Release \
               --output ./../bin \
               -p:PublishProtocol=FileSystem \
               -p:SelfContained=true \
-              -p:PublishAot=$NATIVE \
-              -p:StripSymbols=$STRIP
+              -p:PublishAot=$NATIVE
 
       - name: Build bundle
         id: bundle
-        run: |        
-          EXEC=$(ls ./bin)
-          artifact="aaxclean-cli${{ inputs.libation-version }}-linux-${{ inputs.architecture }}${{ inputs.native }}"
-          
-          tar -cvz -f "$artifact" ./bin/$EXEC
+        working-directory: ./bin
+        run: |
+          NATIVE=$([ "${{ inputs.native }}" == "Native" ] && echo "-native" || echo "")
+          artifact="aaxclean-cli-v${{ inputs.aaxclean-version }}-macOS-${{ inputs.architecture }}$NATIVE.tgz"
+                    
+          tar -cvz -f "$artifact" *
           echo "artifact=${artifact}" >> "${GITHUB_OUTPUT}"
           
       - name: Publish bundle
         uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.bundle.outputs.artifact }}
-          path: ./${{ steps.bundle.outputs.artifact }}
+          path: ./bin/${{ steps.bundle.outputs.artifact }}
           if-no-files-found: error
           retention-days: 7

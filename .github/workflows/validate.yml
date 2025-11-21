@@ -26,4 +26,4 @@ jobs:
     needs: [get_version]
     uses: ./.github/workflows/build.yml
     with:
-      libation-version: ${{ needs.get_version.outputs.version }}
+      aaxclean-version: ${{ needs.get_version.outputs.version }}
