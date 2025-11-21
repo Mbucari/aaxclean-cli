@@ -1,0 +1,48 @@
+# build.yml
+---
+name: build
+
+on:
+  workflow_call:
+    inputs:
+      libation-version:
+        type: string
+        description: "Libation version number"
+        required: true
+      dotnet-version:
+        type: string
+        default: "10.x"
+        description: ".NET version to target"
+
+jobs:
+
+  linux:
+    strategy:
+      matrix:
+        include:
+          - architecture: arm64
+          - architecture: x64
+          - architecture: x64
+            native: Native
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      libation-version: ${{ inputs.libation-version }}
+      dotnet-version: ${{ inputs.dotnet-version }}
+      architecture: ${{ matrix.architecture }}
+      native: ${{ matrix.native }}
+      
+  mac:
+    strategy:
+      matrix:
+        include:
+          - architecture: x64
+          - architecture: arm64
+          - architecture: arm64
+            native: Native
+    uses: ./.github/workflows/build-mac.yml
+    with:
+      libation-version: ${{ inputs.libation-version }}
+      dotnet-version: ${{ inputs.dotnet-version }}
+      architecture: ${{ matrix.architecture }}
+      native: ${{ matrix.native }}
+      

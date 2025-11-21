@@ -1,0 +1,61 @@
+# build-windows.yml
+---
+name: build
+
+on:
+  workflow_call:
+    inputs:
+      libation-version:
+        type: string
+      architecture:
+        type: string
+      dotnet-version:
+        type: string
+
+jobs:
+  build:
+    name: "win-${{ inputs.architecture }}"
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish
+        working-directory: ./src
+        run: |
+          $RUNTIME_ID="win-${{ inputs.architecture }}"
+          
+          $OUTPUT="bin/Publish/win-${{ inputs.architecture }}"
+          
+          echo "Runtime Identifier: $RUNTIME_ID"
+          echo "Output Directory: $OUTPUT"
+          
+          dotnet publish `
+              aaxclean-cli/aaxclean-cli.csproj `
+              --OS linux `
+              --arch ${{ inputs.architecture }} `
+              --configuration ${{ env.DOTNET_CONFIGURATION }} `
+              --output ./../ `
+              -p:PublishProtocol=FileSystem `
+              -p:SelfContained=true `
+              -p:PublishAot=true          
+
+      - name: Zip artifact
+        id: zip
+        working-directory: 
+        run: |
+          $bin_dir = "win-${{ inputs.architecture }}\"
+          $artifact="GEHistoricalImagery.${{ steps.get_version.outputs.version }}-win-${{ inputs.architecture }}.zip"
+          "artifact=$artifact" >> $env:GITHUB_OUTPUT
+          Compress-Archive -Path "${bin_dir}*" -DestinationPath "$artifact"
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: GEHistoricalImagery.${{ steps.get_version.outputs.version }}-win-${{ inputs.architecture }}.zip
+          path: ./src/bin/Publish/${{ steps.zip.outputs.artifact }}
+          if-no-files-found: error
+          retention-days: 7

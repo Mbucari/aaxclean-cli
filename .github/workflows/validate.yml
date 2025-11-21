@@ -1,0 +1,29 @@
+# validate.yml
+---
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  get_version:
+    runs-on: ubuntu-slim
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version
+        id: get_version
+        run: |
+          wget "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/src/aaxclean-cli.csproj"
+          version="$(grep -Eio -m 1 '<Version>.*</Version>' ./aaxclean-cli.csproj | sed -r 's/<\/?Version>//g')"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+  build:
+    needs: [get_version]
+    uses: ./.github/workflows/build.yml
+    with:
+      libation-version: ${{ needs.get_version.outputs.version }}

@@ -1,0 +1,64 @@
+# build-linux.yml
+# Reusable workflow that builds the Linux and MacOS (x64 and arm64) versions of Libation.
+---
+name: build
+
+on:
+  workflow_call:
+    inputs:
+      libation-version:
+        type: string
+      architecture:
+        type: string
+      native:
+        type: string
+      dotnet-version:
+        type: string
+
+jobs:
+  build:
+    name: "mac-${{ inputs.architecture }} ${{ inputs.native }}"
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Publish
+        id: publish
+        working-directory: ./src
+        run: |
+          brew install llvm
+          NATIVE=$([ "${{ inputs.native }}" == "Native" ] && echo "true" || echo "false")
+          
+          dotnet  publish aaxclean-cli.csproj \
+              --os linux \
+              --arch ${{ inputs.architecture }} \
+              --configuration Release \
+              --output ./../bin \
+              -p:PublishProtocol=FileSystem \
+              -p:SelfContained=true \
+              -p:PublishAot=$NATIVE
+
+      - name: Build bundle
+        id: bundle
+        run: |        
+          EXEC=$(ls ./bin)
+          artifact="aaxclean-cli${{ inputs.libation-version }}-linux-${{ inputs.architecture }}${{ inputs.native }}"
+          
+          tar -cvz -f "$artifact" ./bin/$EXEC
+          echo "artifact=${artifact}" >> "${GITHUB_OUTPUT}"
+          
+      - name: Publish bundle
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.bundle.outputs.artifact }}
+          path: ./${{ steps.bundle.outputs.artifact }}
+          if-no-files-found: error
+          retention-days: 7

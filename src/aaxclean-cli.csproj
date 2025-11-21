@@ -14,7 +14,9 @@
     <PackageTags>Audible AAC AAXC m4b audiobook</PackageTags>
     <PackageReleaseNotes>Added list-chapters and console colors</PackageReleaseNotes>
     <NeutralLanguage>English</NeutralLanguage>
+	<PublishTrimmed>true</PublishTrimmed>
 	<PublishSingleFile>true</PublishSingleFile>
+	<PublishProtocol>FileSystem</PublishProtocol>
 	<PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
 
