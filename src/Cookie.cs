@@ -17,16 +17,17 @@ public class Cookie
 			throw new ArgumentNullException(nameof(cookie));
 
 		var split = cookie.Split('|', StringSplitOptions.RemoveEmptyEntries);
-		if (split.Length != 2)
+		int index = cookie.IndexOf('|');
+		if (index < 1)
 			throw new Exception("Cookie format is \"name|value\"");
 
-		split[0] = split[0].Trim();
-		split[1] = split[1].Trim();
+		var name = cookie.Substring(0, index);
+		var value = cookie.Substring(index + 1);
 
-		if (string.IsNullOrEmpty(split[0]) || string.IsNullOrEmpty(split[1]))
+		if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(value))
 			throw new Exception("Cookie format is \"name|value\"");
 
-		Name = split[0];
-		Value = split[1];
+		Name = name;
+		Value = value;
 	}
 }

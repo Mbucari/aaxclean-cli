@@ -26,11 +26,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="AAXClean" Version="2.1.0.1" />
-  </ItemGroup>
+	  <Compile Remove="Properties\PublishProfiles\**" />
+	  <EmbeddedResource Remove="Properties\PublishProfiles\**" />
+	  <None Remove="Properties\PublishProfiles\**" />
+	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Properties\PublishProfiles\" />
-	</ItemGroup>
+	  <PackageReference Include="AAXClean" Version="2.1.0.1" />
+  </ItemGroup>
 
 </Project>

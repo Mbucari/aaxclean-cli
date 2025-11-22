@@ -157,10 +157,11 @@ public partial class AaxConversionOptions
 
 	private static string ParseAndValidateOutputFile(string value)
 	{
-		var dir = Path.GetDirectoryName(value);
+		var fullPath = Path.GetFullPath(value);
+		var dir = Path.GetDirectoryName(fullPath);
 		if (!Directory.Exists(dir))
 			Directory.CreateDirectory(dir);
-		return value;
+		return fullPath;
 	}
 
 	private static string ParseAndValidateInputFile(string value)

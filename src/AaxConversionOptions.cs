@@ -97,23 +97,11 @@ public partial class AaxConversionOptions
 
 	private Mp4File GetAaxFromUrl()
 	{
-		var uri = new Uri(InputFromUrl);
 
-		var cookieContainer = new CookieContainer();
-		using var handler = new HttpClientHandler { CookieContainer = cookieContainer };
-		using var client = new HttpClient(handler);
-		using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-		request.Headers.Add("User-Agent", UrlUserAgent);
+		var nfs = new NetworkStream(InputFromUrl, UrlUserAgent, Cookies);
+		
 
-		foreach (var c in Cookies)
-		{
-			cookieContainer.Add(uri, new System.Net.Cookie(c.Name, c.Value));
-		}
-
-		var response = client.Send(request, HttpCompletionOption.ResponseHeadersRead);
-		var stream = response.Content.ReadAsStream();
-
-		return OpenStream(stream, response.Content.Headers.ContentLength.Value);
+		return OpenStream(nfs, nfs.Length);
 	}
 
 
