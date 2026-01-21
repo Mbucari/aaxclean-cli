@@ -27,6 +27,7 @@ public partial class AaxConversionOptions
 	public string ChapterInfoFile { get; private set; }
 	public string OutputToFile { get; private set; }
 	public bool SplitFileByChapters { get; private set; }
+	public bool MoovFastStart { get; private set; }
 	public bool ListChapters { get; private set; }
 	public int ReturnCode { get; private set; }
 

@@ -43,36 +43,19 @@ internal class Program
 			if (chapters is not null)
 				ListChapters("JSON FILE CHAPTERS", chapters);
 
-			ReWriteColored(($"Opening Aax file...", ConsoleColor.White));
-			var aaxFile = aaxConversionOptions.GetInputFile();
-			ReWriteColored(($"Aax file opened successfully\r\n", ConsoleColor.Green));
-
-			if (aaxConversionOptions.ListChapters)
-			{
-				ListChapters("CHAPTER LIST", aaxFile.GetChaptersFromMetadata());
-			}
-
-			if (aaxConversionOptions.OutputToFile is null) return 0;
-
-			if (aaxFile is not (AaxFile or DashFile))
-			{
-				if (aaxFile.FileType is FileType.Mpeg4)
-					WriteColoredLine(("ERROR: Cannot convert an unencrypted file", ConsoleColor.Red));
-				else
-					WriteColoredLine(("ERROR: Cannot convert an encrypted file without keys", ConsoleColor.Red));
-				return -3;
-			}
-
 			DateTime startTime = DateTime.Now;
-			int chNum = 1;
-			var operation
-				= aaxConversionOptions.SplitFileByChapters
-				? aaxFile.ConvertToMultiMp4aAsync(chapters ?? aaxFile.GetChaptersFromMetadata(), cb => cb.OutputFile = aaxConversionOptions.GetOutputStream(chNum++))
-				: aaxFile.ConvertToMp4aAsync(aaxConversionOptions.GetOutputStream(), chapters);
+			var conversionResult = await DoAaxConversionAsync(aaxConversionOptions, chapters);
+			if (conversionResult != 0)
+				return conversionResult;
 
-			operation.ConversionProgressUpdate += AaxFile_ConversionProgressUpdate;
-
-			await operation;
+			if (aaxConversionOptions.MoovFastStart)
+			{
+				GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, true, true);
+				ConsoleText.WriteLine();
+				var operation = Mp4File.RelocateMoovAsync(aaxConversionOptions.OutputToFile);
+				operation.ConversionProgressUpdate += AaxFile_FastStartProgressUpdate;
+				await operation;
+			}
 
 			var duration = DateTime.Now - startTime;
 
@@ -94,6 +77,40 @@ internal class Program
 
 			return -2;
 		}
+	}
+
+	private static async Task<int> DoAaxConversionAsync(AaxConversionOptions aaxConversionOptions, AAXClean.ChapterInfo chapters)
+	{
+		ReWriteColored(($"Opening Aax file...", ConsoleColor.White));
+		using var aaxFile = aaxConversionOptions.GetInputFile();
+		ReWriteColored(($"Aax file opened successfully\r\n", ConsoleColor.Green));
+
+		if (aaxConversionOptions.ListChapters)
+		{
+			ListChapters("CHAPTER LIST", aaxFile.GetChaptersFromMetadata());
+		}
+
+		if (aaxConversionOptions.OutputToFile is null) return -1;
+
+		if (aaxFile is not (AaxFile or DashFile))
+		{
+			if (aaxFile.FileType is FileType.Mpeg4)
+				WriteColoredLine(("ERROR: Cannot convert an unencrypted file", ConsoleColor.Red));
+			else
+				WriteColoredLine(("ERROR: Cannot convert an encrypted file without keys", ConsoleColor.Red));
+			return -3;
+		}
+
+		int chNum = 1;
+		var operation
+			= aaxConversionOptions.SplitFileByChapters
+			? aaxFile.ConvertToMultiMp4aAsync(chapters ?? aaxFile.GetChaptersFromMetadata(), cb => cb.OutputFile = aaxConversionOptions.GetOutputStream(chNum++))
+			: aaxFile.ConvertToMp4aAsync(aaxConversionOptions.GetOutputStream(), chapters);
+
+		operation.ConversionProgressUpdate += AaxFile_ConversionProgressUpdate;
+
+		await operation;
+		return 0;
 	}
 
 	private static void ListChapters(string prefix, AAXClean.ChapterInfo chInfo)
@@ -132,7 +149,18 @@ internal class Program
 		ReWriteColored
 			(
 			("Conversion progress", ConsoleColor.Green),
-			($": {e.FractionCompleted:P2}    ", ConsoleColor.White),
+			($": {e.FractionCompleted,7:P2}    ", ConsoleColor.White),
+			("average speed", ConsoleColor.Green),
+			($" = {(int)e.ProcessSpeed}x", ConsoleColor.White)
+			);
+	}
+
+	private static void AaxFile_FastStartProgressUpdate(object sender, ConversionProgressEventArgs e)
+	{
+		ReWriteColored
+			(
+			("Fast start progress", ConsoleColor.Green),
+			($": {e.FractionCompleted,7:P2}    ", ConsoleColor.White),
 			("average speed", ConsoleColor.Green),
 			($" = {(int)e.ProcessSpeed}x", ConsoleColor.White)
 			);

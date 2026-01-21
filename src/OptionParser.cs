@@ -83,6 +83,9 @@ public partial class AaxConversionOptions
 					options.OutputToFile = ParseAndValidateOutputFile(GetNextArgument());
 					hasOutput = true;
 					break;
+				case "--moov_faststart":
+					options.MoovFastStart = true;
+					break;
 				default:
 					throw new Exception($"Unknown option '{option}'");
 			}
@@ -119,6 +122,11 @@ public partial class AaxConversionOptions
 			        -u, --url[optional]... Aax(c) input from http(s) url
 
 			        --user_agent[optional]... Http(s) user agent
+			
+			        -o, --outfile[optional]... Output file to write the decrypted m4b
+
+					--moov_faststart[optional]... Move the 'moov' atom to the beginning of the
+			                                      file for faster playback start.
 
 			Default is "{DefaultUserAgent}"
 
@@ -144,8 +152,6 @@ public partial class AaxConversionOptions
 			Example: --chapter "Chapter 1|0|1345245" --chapter "Chapter 2|1345245|2411579"
 
 			        --chapter_info[optional]... file path to an Audible Api chapter_info json structure
-
-			        -o, --outfile[optional]... Output file to write the decrypted m4b
 
 			        -s[optional]... Split file int multiple files by chapters
 			If this option is specified, output file names are prepended with the chapter number.
