@@ -19,16 +19,19 @@ jobs:
   linux:
     strategy:
       matrix:
+        architecture: [arm64, x64]
         include:
-          - architecture: arm64
-          - architecture: x64
-            native: Native
+          - runner: ubuntu-22.04-arm
+            architecture: arm64
+          - runner: ubuntu-22.04
+            architecture: x64
     uses: ./.github/workflows/build-linux.yml
     with:
       aaxclean-version: ${{ inputs.aaxclean-version }}
       dotnet-version: ${{ inputs.dotnet-version }}
       architecture: ${{ matrix.architecture }}
-      native: ${{ matrix.native }}
+      runner: ${{ matrix.runner }}
+      native: Native
       
   mac:
     strategy:

@@ -14,11 +14,13 @@ on:
         type: string
       dotnet-version:
         type: string
+      runner:
+        type: string
 
 jobs:
   build:
     name: "linux-${{ inputs.architecture }} ${{ inputs.native }}"
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v6
       - name: Setup .NET
