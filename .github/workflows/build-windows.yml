@@ -43,7 +43,7 @@ jobs:
           Compress-Archive -Path ".\bin\*" -DestinationPath "$artifact"
 
       - name: Publish artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.zip.outputs.artifact }}
           path: ./${{ steps.zip.outputs.artifact }}
